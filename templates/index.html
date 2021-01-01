@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}">
+</head>
+<body>
+    OT Test
+    <div id='editor'>{{document}}</div>
+</body>
+</html>
+
+<script src="{{ url_for('static', filename='src/ace.js') }}"></script>
+
+<!--ACE EDITOR MODES & THEMES-->
+<script src="{{ url_for('static', filename='src/modes/mode-python.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/themes/theme-twilight.js') }}" type="text/javascript" charset="utf-8"></script>
+<!---->
+<script src="{{ url_for('static', filename='src/transform.js') }}?v=0.06" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/apply.js') }}?v=0.09" type="text/javascript" charset="utf-8"></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script>
+// Setup Socket Handling
+var socket = io('/editor');
+
+socket.on('connect', function(){
+    socket.emit('joined');
+});
+
+// The changes made to the document by the client, which has
+// not yet been sent to the server
+var pending_changes = [];
+
+// The recently added changes from the server
+var recently_loaded_operations = new Set();
+
+// Whether or not the client is still waiting for the server
+// to send a confirmation for the changes
+var waiting_for_response = false;
+
+/*Send the pending changes to the server*/
+function send_changes(){
+    socket.emit('send operation', JSON.stringify(pending_changes));
+}
+
+var session_id = '';
+
+/*If the server has completed the last request, send an update*/
+function update(){
+    if (!waiting_for_response){
+        // Send Response
+        send_changes();
+        pending_changes = [];
+    }
+
+    // Refresh every 1000ms
+    setTimeout(update, 1000)
+}
+
+// Set off update loop
+update();
+
+// Handle server callback success after joining
+socket.on('after-join', (session_id) => {
+    session_id = session_id;
+});
+
+// Handle server callback success after submitting changes
+socket.on('call-back', (data) => {
+    var server_operations = JSON.parse(data);
+
+    let [to_apply, ] = xform_multiple(pending_changes, server_operations);
+
+    for (let op of to_apply){
+        // Remove session id
+        recently_loaded_operations.add(JSON.stringify(op.slice(0, -1)));
+        apply(op, editor);
+    }
+    
+    if(to_apply.length > 0){console.log('Received update...', to_apply);}
+});
+
+
+
+// Set up Editor
+var editor_elem = document.getElementById('editor');
+
+var editor = ace.edit(editor_elem);
+var JavaScriptMode = ace.require("ace/mode/python").Mode;
+editor.session.setMode(new JavaScriptMode());
+editor.setTheme('ace/theme/twilight');
+
+editor.session.on('change', function(e){
+    // Assume one row
+
+    var new_operations = [];
+
+    if (e.action == 'remove'){
+        for (var i = e.start.column; i < e.end.column; i++){
+            // Delete sets back a column, so we adjust accordingly!!
+            new_operations.push(['DEL', e.start.column, session_id]);
+        }
+    }else if (e.action == 'insert'){
+        var index = 0;
+        for (var i = e.start.column; i < e.end.column; i++){
+            new_operations.push(['INS', i, e.lines[0].charAt(index), session_id]);
+            index += 1;
+        }
+    }
+
+    for (let new_op of new_operations){
+        // Remove last (session id)
+        let json_op = JSON.stringify(new_op.slice(0, -1));
+
+        if(recently_loaded_operations.has(json_op)){
+            recently_loaded_operations.delete(json_op);
+        }else{
+            pending_changes.push(new_op);
+        }
+    }
+})
+</script>
