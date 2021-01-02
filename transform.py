@@ -38,7 +38,7 @@ class Position:
     def __str__(self) -> str:
         return f'Position @ row: {self.row}, column: {self.column}'
 
-    def to_list_structure(self) -> List[int, int]:
+    def to_list_structure(self) -> List[int]:
         """Return the position as a list
         as to be sent as JSON
         """
@@ -53,7 +53,7 @@ class Operation:
     """
     author: str
 
-    def get_list_structure(self) -> List[list]:
+    def get_list_structure(self) -> list:
         """Return the Operation as a list
         as to be sent as JSON
         """
@@ -76,7 +76,7 @@ class InsertOperation(Operation):
     character: str
     author: str
 
-    def get_list_structure(self) -> List[str, List[int, int], str, str]:
+    def get_list_structure(self) -> list:
         """Return the position as a list
         as to be sent as JSON
 
@@ -110,7 +110,7 @@ class DeleteOperation(Operation):
     position: Position
     author: str
 
-    def get_list_structure(self) -> List[str, List[int, int], str]:
+    def get_list_structure(self) -> list:
         """Return the position as a list
         as to be sent as JSON
 
@@ -138,7 +138,7 @@ class IdentityOperation(Operation):
 
     author: str
 
-    def get_list_structure(self) -> List[str, str]:
+    def get_list_structure(self) -> list:
         return ['ID', self.author]
 
     def get_identity(self) -> str:
