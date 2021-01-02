@@ -1,4 +1,15 @@
-""""""
+"""Main file for the collaborate-code
+project. Run this file to initialize the server.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+"""
 
 import logging
 import json
@@ -28,12 +39,20 @@ document = Document()
 
 
 @app.route('/editor/')
-def join():
+def access() -> str:
+    """Called when a user access the editor"""
     return render_template('index.html', document=document.get_text(), sync_mode=socket.async_mode)
 
 
 @socket.on('joined', namespace='/editor')
-def joined():
+def joined() -> None:
+    """Receive the emission that a user has loaded and
+    joined the editor.
+
+    Emits back to the user confirmation with their
+    session id.
+    """
+
     session_id = request.sid
 
     document.clients[session_id] = document.get_last_revision_num()
@@ -43,7 +62,14 @@ def joined():
 
 
 @socket.on('send operation', namespace='/editor')
-def send(raw_data):
+def update(raw_data) -> None:
+    """Receive when user sends new operations or wishes
+    to update their document to the latest revision.
+
+    Processes new operations (raw_data) and sends back
+    any transformed operations the user may be missing.
+    """
+
     session_id = request.sid
 
     data = json.loads(raw_data)
@@ -75,11 +101,6 @@ def send(raw_data):
         logger.info(f'User {session_id} submitted new changes.')
 
     emit('call-back', json.dumps(changes_for_client), room=session_id)
-
-
-@app.route('/api/send')
-def send():
-    pass
 
 
 if __name__ == '__main__':

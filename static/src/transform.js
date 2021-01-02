@@ -1,3 +1,19 @@
+/*This file is a mirror of the
+transform.py file. Please read the documentation
+in the transform.py for more information
+on these functions.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
+
 function is_pos_before(pos_1, pos_2){
     return pos_1[0] < pos_2[0] || (pos_1[0] == pos_2[0] && pos_1[1] < pos_2[1]);
 }

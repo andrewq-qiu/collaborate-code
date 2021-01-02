@@ -1,3 +1,18 @@
+/*This file contains the apply function,
+which helps apply operations onto the Ace
+Editor
+
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
 /*Apply operation to Ace Editor type.*/
 function apply(op, editor_){
     if (op[0] == 'ID'){return;}
