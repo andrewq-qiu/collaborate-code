@@ -14,9 +14,11 @@ function apply(op, editor_){
 
         if (pos['column'] == -1){
             const range = {
-                'start': {'row': pos['row'] - 1, 'column': editor_.session.getRowLength(pos['column'] - 1)},
+                'start': {'row': pos['row'] - 1, 'column': editor_.session.getLine(pos['row'] - 1).length},
                 'end': {'row': pos['row'], 'column': 0}
             }
+
+            console.log(range);
 
             editor_.session.remove(range);
         }else{
