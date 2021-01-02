@@ -6,7 +6,7 @@ import colorlog
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from document import Document
-from transform import DeleteOperation, InsertOperation
+from transform import DeleteOperation, InsertOperation, Position
 
 # Add Color
 handler = colorlog.StreamHandler()
@@ -51,9 +51,9 @@ def send(raw_data):
 
     for change in data:
         if change[0] == 'INS':
-            operation = InsertOperation(change[1], change[2], session_id)
+            operation = InsertOperation(Position(change[1][0], change[1][1]), change[2], session_id)
         elif change[0] == 'DEL':
-            operation = DeleteOperation(change[1], session_id)
+            operation = DeleteOperation(Position(change[1][0], change[1][1]), session_id)
         else:
             logger.error('A non INS or DEL was given!')
             return

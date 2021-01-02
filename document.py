@@ -23,23 +23,37 @@ class Revision:
 
 
 class Text:
+
+    _text: List[List[str]]
+
     def __init__(self):
-        self._text = []
+        self._text = [[]]
 
     def get_text(self):
-        return ''.join(self._text)
+        return '\n'.join([''.join(row) for row in self._text])
 
     def apply(self, operation: Operation):
         """Applies an operation onto the text"""
         identity = operation.get_identity()
 
         if identity == 'INS':
-            pos = min(max(operation.position, 0), len(self._text))
-            self._text.insert(pos, operation.character)
+            if operation.character == '\n':
+                left = self._text[operation.position.row][:operation.position.column]
+                right = self._text[operation.position.row][operation.position.column:]
+
+                self._text[operation.position.row] = left
+                self._text.insert(operation.position.row + 1, right)
+            else:
+                self._text[operation.position.row].insert(
+                    operation.position.column, operation.character)
 
         elif identity == 'DEL':
-            pos = min(max(operation.position, 0), len(self._text) - 1)
-            self._text.pop(pos)
+            if operation.position.column == -1:
+                # Delete row and append to the previous
+                row = self._text.pop(operation.position.row)
+                self._text[operation.position.row - 1].extend(row)
+            else:
+                self._text[operation.position.row].pop(operation.position.column)
 
 
 class Document:

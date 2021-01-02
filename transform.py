@@ -1,5 +1,17 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Union
+
+
+@dataclass
+class Position:
+    row: int
+    column: int
+
+    def __str__(self):
+        return f'(POS | row: {self.row}, column: {self.column})'
+
+    def to_list_structure(self):
+        return [self.row, self.column]
 
 
 class Operation:
@@ -24,18 +36,22 @@ class InsertOperation(Operation):
     """A class representing an operation that inserts
     a character a specified position."""
 
-    position: int
+    position: Position
     character: str
     author: str
 
     def get_list_structure(self):
-        return ['INS', self.position, self.character, self.author]
+        return ['INS', self.position.to_list_structure(), self.character, self.author]
 
     def get_identity(self) -> str:
         return 'INS'
 
     def __str__(self):
-        return f'INS "{self.character}" @ {self.position}'
+        if self.character == '\n':
+            char = 'newline'
+        else:
+            char = self.character
+        return f'INS "{char}" @ {self.position}'
 
 
 @dataclass
@@ -43,11 +59,11 @@ class DeleteOperation(Operation):
     """A class representing an operation that deletes
     a character at a specified position."""
 
-    position: int
+    position: Position
     author: str
 
     def get_list_structure(self):
-        return ['DEL', self.position, self.author]
+        return ['DEL', self.position.to_list_structure(), self.author]
 
     def get_identity(self) -> str:
         return 'DEL'
@@ -124,6 +140,21 @@ def xform(op_1: Operation, op_2: Operation) -> Operation:
     return options[(id_1, id_2)](op_1, op_2)
 
 
+def is_op_before(op_1: Union[InsertOperation, DeleteOperation], op_2: Union[InsertOperation, DeleteOperation]):
+    """Return whether or not op_1 is positioned before
+    op_2."""
+
+    return op_1.position.row < op_2.position.row or (
+            op_1.position.row == op_1.position.row
+            and op_1.position.column < op_2.position.column)
+
+
+def is_op_same_pos(op_1: Union[InsertOperation, DeleteOperation], op_2: Union[InsertOperation, DeleteOperation]):
+    """Return whether or not op_1 is positioned the same as op_2."""
+
+    return op_1.position.row == op_2.position.row and op_1.position.column == op_2.position.column
+
+
 def t_ii(op_1: InsertOperation, op_2: InsertOperation):
     """Return transformed insert op_1 as per
     Operation Transformation with context
@@ -135,13 +166,18 @@ def t_ii(op_1: InsertOperation, op_2: InsertOperation):
     # op_2 does not adjust indexes as it is
     # after op_1.
     # break ties by user identifier (no real order)
-    if op_1.position < op_2.position or \
-            (op_1.position == op_2.position and op_1.author < op_2.author):
+
+    if is_op_before(op_1, op_2) or (is_op_same_pos(op_1, op_2) and op_1.author < op_2.author):
         return InsertOperation(op_1.position, op_1.character, op_1.author)
     # op_2 occurs (in index) before op_1 so its execution
     # will push indexes forward by one; adjust accordingly
     else:
-        return InsertOperation(op_1.position + 1, op_1.character, op_1.author)
+        if op_2.character == '\n':
+            return InsertOperation(
+                Position(op_1.position.row + 1, op_1.position.column), op_1.character, op_1.author)
+        else:
+            return InsertOperation(
+                Position(op_1.position.row, op_1.position.column + 1), op_1.character, op_1.author)
 
 
 def t_id(op_1: InsertOperation, op_2: DeleteOperation):
@@ -154,12 +190,17 @@ def t_id(op_1: InsertOperation, op_2: DeleteOperation):
 
     # Deletion from op_2 does not affect
     # the indexes for op_1. Make no changes
-    if op_1.position <= op_2.position:
+    if is_op_before(op_1, op_2) or is_op_same_pos(op_1, op_2):
         return InsertOperation(op_1.position, op_1.character, op_1.author)
     # Deletion from op_2 pushes op_1 indexes
     # back by one. Adjust accordingly
     else:
-        return InsertOperation(op_1.position - 1, op_1.character, op_1.author)
+        if op_2.position.column == -1:
+            return InsertOperation(
+                Position(op_1.position.row - 1, op_1.position.column), op_1.character, op_1.author)
+        else:
+            return InsertOperation(
+                Position(op_1.position.row, op_1.position.column - 1), op_1.character, op_1.author)
 
 
 def t_di(op_1: DeleteOperation, op_2: InsertOperation):
@@ -173,10 +214,16 @@ def t_di(op_1: DeleteOperation, op_2: InsertOperation):
     # op_2 index position is after
     # op_1 so inserting does not affect
     # op_1 indexes
-    if op_1.position < op_2.position:
+
+    if is_op_before(op_1, op_2):
         return DeleteOperation(op_1.position, op_1.author)
     else:
-        return DeleteOperation(op_1.position + 1, op_1.author)
+        if op_2.character == '\n':
+            return DeleteOperation(
+                Position(op_1.position.row + 1, op_1.position.column), op_1.author)
+        else:
+            return DeleteOperation(
+                Position(op_1.position.row, op_1.position.column + 1), op_1.author)
 
 
 def t_dd(op_1: DeleteOperation, op_2: DeleteOperation):
@@ -189,10 +236,16 @@ def t_dd(op_1: DeleteOperation, op_2: DeleteOperation):
 
     # Deletion from op_2 does not affect
     # the indexes for op_1. Make no changes
-    if op_1.position < op_2.position:
+
+    if is_op_before(op_1, op_2):
         return DeleteOperation(op_1.position, op_1.author)
-    elif op_1.position > op_2.position:
-        return DeleteOperation(op_1.position - 1, op_1.author)
+    elif not is_op_same_pos(op_1, op_2):
+        if op_2.position.column == -1:
+            return DeleteOperation(
+                Position(op_1.position.row - 1, op_1.position.column), op_1.author)
+        else:
+            return DeleteOperation(
+                Position(op_1.position.row, op_1.position.column - 1), op_1.author)
     else:
         # They are the same deletion!
         return IdentityOperation()
