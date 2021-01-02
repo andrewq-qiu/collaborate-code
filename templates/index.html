@@ -4,7 +4,6 @@
     <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}">
 </head>
 <body>
-    OT Test
     <div id='editor'>{{document}}</div>
 </body>
 </html>
@@ -15,8 +14,8 @@
 <script src="{{ url_for('static', filename='src/modes/mode-python.js') }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='src/themes/theme-twilight.js') }}" type="text/javascript" charset="utf-8"></script>
 <!---->
-<script src="{{ url_for('static', filename='src/transform.js') }}?v=0.06" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for('static', filename='src/apply.js') }}?v=0.09" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/transform.js') }}?v=0.11" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/apply.js') }}?v=0.19" type="text/javascript" charset="utf-8"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script>
@@ -31,8 +30,10 @@ socket.on('connect', function(){
 // not yet been sent to the server
 var pending_changes = [];
 
-// The recently added changes from the server
-var recently_loaded_operations = new Set();
+// Whether or not the client should ignore changes from editor.on("change")
+// This is so we can edit the document programatically without triggering
+// a loop of on change events
+var ignore_changes = false;
 
 // Whether or not the client is still waiting for the server
 // to send a confirmation for the changes
@@ -54,15 +55,15 @@ function update(){
     }
 
     // Refresh every 1000ms
-    setTimeout(update, 1000)
+    setTimeout(update, 1000);
 }
 
 // Set off update loop
 update();
 
 // Handle server callback success after joining
-socket.on('after-join', (session_id) => {
-    session_id = session_id;
+socket.on('after-join', (session) => {
+    session_id = session;
 });
 
 // Handle server callback success after submitting changes
@@ -71,11 +72,16 @@ socket.on('call-back', (data) => {
 
     let [to_apply, ] = xform_multiple(pending_changes, server_operations);
 
-    for (let op of to_apply){
-        // Remove session id
-        recently_loaded_operations.add(JSON.stringify(op.slice(0, -1)));
-        apply(op, editor);
+    try{
+        ignore_changes = true;
+
+        for (let op of to_apply){
+            apply(op, editor);
+        }
+    }finally{
+        ignore_changes = false;
     }
+    
     
     if(to_apply.length > 0){console.log('Received update...', to_apply);}
 });
@@ -91,32 +97,65 @@ editor.session.setMode(new JavaScriptMode());
 editor.setTheme('ace/theme/twilight');
 
 editor.session.on('change', function(e){
-    // Assume one row
 
-    var new_operations = [];
+    if(ignore_changes){return;}
 
     if (e.action == 'remove'){
-        for (var i = e.start.column; i < e.end.column; i++){
-            // Delete sets back a column, so we adjust accordingly!!
-            new_operations.push(['DEL', e.start.column, session_id]);
+        // Iterate over each row
+        var index = 0;
+        for (var i = e.start.row; i <= e.end.row; i++){
+            // Iterate over each column
+            var [start, end] = [0, e.lines[index].length];
+            if (index == 0){
+                start += e.start.column;
+                end += e.start.column;
+            }
+
+            for (var j = start; j < end; j++){
+                if (i == e.start.row){
+                    pending_changes.push(['DEL', [e.start.row, start], session_id]);
+                }else{
+                    pending_changes.push(['DEL', [e.start.row + 1, start], session_id]);
+                }
+            }
+
+            // If it is any row but the first row
+            if(i > e.start.row){
+                // Remove a line
+                pending_changes.push(['DEL', [e.start.row + 1, -1], session_id]);
+            }
+
+            index++;
         }
     }else if (e.action == 'insert'){
+        // Iterate over each row
         var index = 0;
-        for (var i = e.start.column; i < e.end.column; i++){
-            new_operations.push(['INS', i, e.lines[0].charAt(index), session_id]);
-            index += 1;
+        for (var i = e.start.row; i <= e.end.row; i++){
+            // Iterate over each column
+            var [start, end] = [0, e.lines[index].length];
+            if (index == 0){
+                start += e.start.column;
+                end += e.start.column;
+            }
+
+            var j_index = 0;
+            for (var j = start; j < end; j++){
+                let char = e.lines[index].charAt(j_index);
+                pending_changes.push(['INS', [i, j], char, session_id])
+                j_index++;
+            }
+
+            // If it is any row but the last row
+            if(i < e.end.row){
+                // Add a new line
+                pending_changes.push(['INS', [i, end], '\n', session_id]);
+            }
+
+            index++;
         }
+
     }
 
-    for (let new_op of new_operations){
-        // Remove last (session id)
-        let json_op = JSON.stringify(new_op.slice(0, -1));
-
-        if(recently_loaded_operations.has(json_op)){
-            recently_loaded_operations.delete(json_op);
-        }else{
-            pending_changes.push(new_op);
-        }
-    }
+    console.log(e);
 })
 </script>
