@@ -72,6 +72,7 @@ class DeleteOperation(Operation):
         return f'DEL @ {self.position}'
 
 
+@dataclass
 class IdentityOperation(Operation):
     """A class representing an operation that does nothing
     and preserves the original document state."""
@@ -166,7 +167,6 @@ def t_ii(op_1: InsertOperation, op_2: InsertOperation):
     # op_2 does not adjust indexes as it is
     # after op_1.
     # break ties by user identifier (no real order)
-
     if is_op_before(op_1, op_2) or (is_op_same_pos(op_1, op_2) and op_1.author < op_2.author):
         return InsertOperation(op_1.position, op_1.character, op_1.author)
     # op_2 occurs (in index) before op_1 so its execution
@@ -175,9 +175,12 @@ def t_ii(op_1: InsertOperation, op_2: InsertOperation):
         if op_2.character == '\n':
             return InsertOperation(
                 Position(op_1.position.row + 1, op_1.position.column), op_1.character, op_1.author)
-        else:
+        # Not \n
+        elif op_2.position.row == op_1.position.row:
             return InsertOperation(
                 Position(op_1.position.row, op_1.position.column + 1), op_1.character, op_1.author)
+        else:
+            return InsertOperation(op_1.position, op_1.character, op_1.author)
 
 
 def t_id(op_1: InsertOperation, op_2: DeleteOperation):
@@ -198,9 +201,11 @@ def t_id(op_1: InsertOperation, op_2: DeleteOperation):
         if op_2.position.column == -1:
             return InsertOperation(
                 Position(op_1.position.row - 1, op_1.position.column), op_1.character, op_1.author)
-        else:
+        elif op_2.position.row == op_1.position.row:
             return InsertOperation(
                 Position(op_1.position.row, op_1.position.column - 1), op_1.character, op_1.author)
+        else:
+            return InsertOperation(op_1.position, op_1.character, op_1.author)
 
 
 def t_di(op_1: DeleteOperation, op_2: InsertOperation):
@@ -221,9 +226,11 @@ def t_di(op_1: DeleteOperation, op_2: InsertOperation):
         if op_2.character == '\n':
             return DeleteOperation(
                 Position(op_1.position.row + 1, op_1.position.column), op_1.author)
-        else:
+        elif op_2.position.row == op_1.position.row:
             return DeleteOperation(
                 Position(op_1.position.row, op_1.position.column + 1), op_1.author)
+        else:
+            return DeleteOperation(op_1.position, op_1.author)
 
 
 def t_dd(op_1: DeleteOperation, op_2: DeleteOperation):
@@ -243,12 +250,14 @@ def t_dd(op_1: DeleteOperation, op_2: DeleteOperation):
         if op_2.position.column == -1:
             return DeleteOperation(
                 Position(op_1.position.row - 1, op_1.position.column), op_1.author)
-        else:
+        elif op_2.position.row == op_1.position.row:
             return DeleteOperation(
                 Position(op_1.position.row, op_1.position.column - 1), op_1.author)
+        else:
+            return DeleteOperation(op_1.position, op_1.author)
     else:
         # They are the same deletion!
-        return IdentityOperation()
+        return IdentityOperation(op_1.author)
 
 
 

@@ -65,8 +65,10 @@ function t_ii(op_1, op_2){
     }else{
         if(op_2[2] == '\n'){
             return ['INS', [pos_1[0] + 1, pos_1[1]], op_1[2], op_1[3]];
-        }else{
+        }else if (pos_1[0] == pos_2[0]){
             return ['INS', [pos_1[0], pos_1[1] + 1], op_1[2], op_1[3]];
+        }else{
+            return ['INS', pos_1, op_1[2], op_1[3]];
         }
     }
 }
@@ -80,8 +82,10 @@ function t_id(op_1, op_2){
     }else{
         if(pos_2[1] == -1){
             return ['INS', [pos_1[0] - 1, pos_1[1]], op_1[2], op_1[3]];
-        }else{
+        }else if(pos_1[0] == pos_2[0]){
             return ['INS', [pos_1[0], pos_1[1] - 1], op_1[2], op_1[3]];
+        }else{
+            return ['INS', pos_1, op_1[2], op_1[3]];
         }
     }
 }
@@ -95,8 +99,10 @@ function t_di(op_1, op_2){
     }else{
         if(op_2[2] == '\n'){
             return ['DEL', [pos_1[0] + 1, pos_1[1]], op_1[2]];
-        }else{
+        }else if(pos_1[0] == pos_2[0]){
             return ['DEL', [pos_1[0], pos_1[1] + 1], op_1[2]];
+        }else{
+            return ['DEL', pos_1, op_1[2]];
         }
     }
 }
@@ -110,8 +116,10 @@ function t_dd(){
     }else if(!is_same_pos(pos_1, pos_2)){
         if (pos_2[1] == -1){
             return ['DEL', [pos_1[0] - 1, pos_1[1]], op_1[2]];
-        }else{
+        }else if(pos_1[0] == pos_2[0]){
             return ['DEL', [pos_1[0], pos_1[1]] - 1, op_1[2]];
+        }else{
+            return ['DEL', pos_1, op_1[2]];
         }
     }else{
         return ['ID', op_1[2]];

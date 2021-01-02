@@ -17,7 +17,7 @@ function apply(op, editor_){
                 'start': {'row': pos['row'] - 1, 'column': editor_.session.getRowLength(pos['column'] - 1)},
                 'end': {'row': pos['row'], 'column': 0}
             }
-            
+
             editor_.session.remove(range);
         }else{
             const range = {
