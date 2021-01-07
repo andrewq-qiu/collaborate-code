@@ -17,6 +17,7 @@ import colorlog
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from document import Document
+from drawing import Drawing
 from transform import DeleteOperation, InsertOperation, Position
 
 # Add Color
@@ -36,6 +37,7 @@ app.config['SECRET_KEY'] = 'secret!'
 socket = SocketIO(app, async_mode=None)
 
 document = Document()
+drawing = Drawing()
 
 
 @app.route('/editor/')
@@ -56,12 +58,14 @@ def joined() -> None:
     session_id = request.sid
 
     document.clients[session_id] = document.get_last_revision_num()
+    drawing.clients[session_id] = drawing.get_last_revision_num()
+
     logger.info(f'User {session_id} has connected to the editor.')
 
-    emit('after-join', session_id, room=session_id)
+    emit('after-join', session_id, json.dumps(list(drawing.get_changes_since_revision_num(-1))), room=session_id)
 
 
-@socket.on('send operation', namespace='/editor')
+@socket.on('send-operation', namespace='/editor')
 def update(raw_data) -> None:
     """Receive when user sends new operations or wishes
     to update their document to the latest revision.
@@ -101,6 +105,17 @@ def update(raw_data) -> None:
         logger.info(f'User {session_id} submitted new changes.')
 
     emit('call-back', json.dumps(changes_for_client), room=session_id)
+
+
+@socket.on('send-drawing', namespace='/editor')
+def update_drawings(raw_data) -> None:
+    session_id = request.sid
+
+    data = json.loads(raw_data)
+
+    changes_for_client = drawing.add_changes(changes=data, author=session_id)
+
+    emit('draw-call-back', json.dumps(changes_for_client), room=session_id)
 
 
 if __name__ == '__main__':

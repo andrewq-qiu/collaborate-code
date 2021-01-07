@@ -1,0 +1,26 @@
+.cursor-square{
+    width: 51px;
+    height: 51px;
+    position: absolute;
+    border: 3px solid #565656;
+    pointer-events: none;
+}
+
+.cursor-circle{
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    position: absolute;
+    border: 3px solid #565656;
+    pointer-events: none;
+}
+
+
+.cursor-circle-eraser{
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    position: absolute;
+    border: 3px solid #565656;
+    pointer-events: none;
+}

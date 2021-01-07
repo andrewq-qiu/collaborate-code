@@ -1,0 +1,65 @@
+.wb-canvas{
+    float:left;
+    z-index: 1;
+    position: relative;
+}
+
+.wb-toolbar{
+    float:left;
+    margin-left: -75px;
+    margin-top: 90px;
+    z-index: 2;
+    background-color: #6b6b6b;
+    position:relative;
+    cursor: auto;
+}
+
+.wb-move-button{
+    width: 60px;
+    height:60px;
+    background: url("../img/move.png") center no-repeat;
+    z-index: 2;
+}
+
+.wb-brush-button{
+    width: 60px;
+    height:60px;
+    background: url("../img/brush.png") center no-repeat;
+    z-index: 2;
+}
+
+.wb-eraser-button{
+    width: 60px;
+    height:60px;
+    background: url("../img/eraser.png") center no-repeat;
+    z-index: 2;
+}
+
+.wb-button-selected{
+    background-color: #929292 !important;
+}
+
+.wb-color-button{
+    background-color:#6b6b6b;
+    width: 60px;
+    height:60px;
+    z-index: 2;
+    margin-top:285px;
+    margin-left: -75px;
+    z-index: 2;
+    position:relative;
+    float:left;
+}
+
+.wb-color-circle{
+    background-color: blue;
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    margin-top:10px;
+    margin-left:10px;
+}
+
+.wb-canvas-cursor-mode:hover{
+    cursor: url("../img/standard_cursor.png") 16 16, auto;
+}

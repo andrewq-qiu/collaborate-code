@@ -1,7 +1,10 @@
 <!doctype html>
 <html>
 <head>
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}?v=0.15">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard.css') }}?v=0.18">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard-addon.css') }}?v=0.16">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/cursor.css') }}?v=0.19">
 </head>
 <body>
     <div id='editor'>{{document}}</div>
@@ -16,6 +19,9 @@
 <!---->
 <script src="{{ url_for('static', filename='src/transform.js') }}?v=0.11" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='src/apply.js') }}?v=0.19" type="text/javascript" charset="utf-8"></script>
+
+<script src="{{ url_for('static', filename='src/whiteboard.js') }}?v=0.49" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/whiteboard-addon.js') }}?v=0.31" type="text/javascript" charset="utf-8"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script>
@@ -41,7 +47,7 @@ var waiting_for_response = false;
 
 /*Send the pending changes to the server*/
 function send_changes(){
-    socket.emit('send operation', JSON.stringify(pending_changes));
+    socket.emit('send-operation', JSON.stringify(pending_changes));
 }
 
 var session_id = '';
@@ -62,8 +68,11 @@ function update(){
 update();
 
 // Handle server callback success after joining
-socket.on('after-join', (session) => {
+socket.on('after-join', (session, lines) => {
     session_id = session;
+
+    // Load drawn image
+    wb.addLines(lines);
 });
 
 // Handle server callback success after submitting changes
@@ -155,7 +164,7 @@ editor.session.on('change', function(e){
         }
 
     }
+});
 
-    console.log(e);
-})
+wb.setupServer();
 </script>
