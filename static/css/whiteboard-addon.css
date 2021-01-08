@@ -8,8 +8,8 @@
 .toggle{
     width: 60px;
     height: 60px;
-    right: 15px;
-    top:20px;
+    right: 15.5px;
+    top:70px;
     position:absolute;
     z-index: 2;
     background: url("../img/brush.png") center no-repeat;

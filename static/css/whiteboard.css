@@ -7,7 +7,7 @@
 .wb-toolbar{
     float:left;
     margin-left: -75px;
-    margin-top: 90px;
+    margin-top: 140px;
     z-index: 2;
     background-color: #6b6b6b;
     position:relative;
@@ -44,7 +44,7 @@
     width: 60px;
     height:60px;
     z-index: 2;
-    margin-top:285px;
+    margin-top:335px;
     margin-left: -75px;
     z-index: 2;
     position:relative;

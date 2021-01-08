@@ -1,13 +1,27 @@
 <!doctype html>
 <html>
 <head>
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}?v=0.15">
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard.css') }}?v=0.18">
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard-addon.css') }}?v=0.16">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}?v=0.55">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard.css') }}?v=0.19">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard-addon.css') }}?v=0.18">
     <link rel='stylesheet' href="{{ url_for('static', filename='css/cursor.css') }}?v=0.19">
 </head>
 <body>
+    <div class='blur' id='blur-screen'>
+        <div>
+            <h1>Join the document as:</h1>
+            <input type='text' placeholder='Name or Nickname' id='name-field'>
+            <button id='join' onclick='submitName()' disabled='true'>JOIN</button>
+        </div>
+    </div>
+    <div class='header'>
+        <div class='users-section-container'><span>Users: </span><div id='users-section'></div></div>
+        <div id='share' onclick='copyLink()' onmouseover='shareHover()' onmouseout='shareNotHover()'>SHARE</div>
+    </div>
     <div id='editor'>{{document}}</div>
+    <input id="cb" type="text" hidden>
 </body>
 </html>
 
@@ -20,16 +34,26 @@
 <script src="{{ url_for('static', filename='src/transform.js') }}?v=0.11" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='src/apply.js') }}?v=0.19" type="text/javascript" charset="utf-8"></script>
 
-<script src="{{ url_for('static', filename='src/whiteboard.js') }}?v=0.49" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for('static', filename='src/whiteboard-addon.js') }}?v=0.31" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/whiteboard.js') }}?v=0.50" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/whiteboard-addon.js') }}?v=0.32" type="text/javascript" charset="utf-8"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script>
 // Setup Socket Handling
 var socket = io('/editor');
 
+function getEditorId(){
+    let queryString = window.location.search;
+    let params = new URLSearchParams(queryString);
+
+    let editor_id = params.get('editor_id');
+
+    return editor_id
+}
+
 socket.on('connect', function(){
-    socket.emit('joined');
+    let editor_id = getEditorId();
+    socket.emit('joined', editor_id);
 });
 
 // The changes made to the document by the client, which has
@@ -43,7 +67,10 @@ var ignore_changes = false;
 
 // Whether or not the client is still waiting for the server
 // to send a confirmation for the changes
-var waiting_for_response = false;
+var waiting_for_response = true;
+
+// The name of the user (maybe nickname)
+var display_name = null;
 
 /*Send the pending changes to the server*/
 function send_changes(){
@@ -68,11 +95,19 @@ function update(){
 update();
 
 // Handle server callback success after joining
-socket.on('after-join', (session, lines) => {
+socket.on('after-join', (session, lines, names_and_colors) => {
     session_id = session;
+    waiting_for_response = false;
+
+    wb.setupServer();
+    document.getElementById('join').disabled = false;
 
     // Load drawn image
     wb.addLines(lines);
+
+    for (var state of JSON.parse(names_and_colors)){
+        addUser('', state[0], state[1]);
+    }
 });
 
 // Handle server callback success after submitting changes
@@ -92,9 +127,8 @@ socket.on('call-back', (data) => {
     }
     
     
-    if(to_apply.length > 0){console.log('Received update...', to_apply);}
+    // if(to_apply.length > 0){console.log('Received update...', to_apply);}
 });
-
 
 
 // Set up Editor
@@ -166,5 +200,58 @@ editor.session.on('change', function(e){
     }
 });
 
-wb.setupServer();
+function submitName(){
+    display_name = document.getElementById('name-field').value;
+
+    socket.emit('submit-name', display_name);
+    document.getElementById('blur-screen').style.display = 'none';
+}
+
+function copyLink(){
+    copy(window.location);
+
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'COPIED';
+}
+
+function shareHover(){
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'COPY LINK';
+}
+
+function shareNotHover(){
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'SHARE ' + getEditorId();
+}
+
+shareNotHover();
+
+function addUser(session, name, color){
+    var users_section = document.getElementById('users-section');
+
+    if(session != session_id){
+        let html = "<div><div class='user-box' style='background-color:" + color +  "''><div>" + name + "</div></div></div>";
+        users_section.innerHTML += html;
+    }else{
+        let html = "<div><div class='user-box' style='background-color:grey'><div>" + name + "</div></div></div>";
+        users_section.innerHTML = html + users_section.innerHTML;
+    }
+}
+
+function copy(txt){
+    var cb = document.getElementById("cb");
+    cb.value = txt;
+    cb.style.display='block';
+    cb.select();
+    document.execCommand('copy');
+    cb.style.display='none';
+ }
+
+/*New User*/
+socket.on('new-user-joined', (session, name, color) => {
+    addUser(session, name, color);
+});
 </script>

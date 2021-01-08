@@ -34,7 +34,7 @@ function toggleEditorAndBoard(){
         wb.toolbar.color_button.classList.remove('hide');
         wb.unfreeze();
     }else{
-        toggle.classList.remove('cb-toggle-off');
+        toggle.classList.remove('toggle-off');
         wb.toolbar.element.classList.add('hide');
         wb.toolbar.color_button.classList.add('hide');
         wb.freeze();

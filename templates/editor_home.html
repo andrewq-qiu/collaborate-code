@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor_home.css') }}">
+</head>
+<body>
+    <div class='main-body'>
+        <div id='heading'>An <gr>easy</gr> way to share with <bl>Python.</bl></div>
+
+        <div class='row'>
+            <h2>Join someone else:</h2>
+            <span>
+            <form id='join-form' action=''>
+                <input type='text' name='editor_id' placeholder='ID'>
+            </form>
+            <button type='submit' form='join-form' id='join'>JOIN</button>
+            </span>
+        </div>
+        <span class='error'>Couldn't find an editor session with that ID.</span>
+        <div class='row'>
+            <h2>Create your own:</h2>
+            <form id='create-form' action='../create'></form>
+            <button type='submit' form='create-form' id='create'>CREATE</button>
+        </div>
+    </div>
+
+    <div class='foot'>
+        <a class='github-link' href='https://github.com/andrewcoool/collaborate-code' target='_blank'>
+            <img src="{{ url_for('static', filename='img/github.png') }}" class='link-img'>
+            <span class='link-text'>GitHub</span>
+        </a>
+    </div>
+</body>
+</html>
+
+<script>
+    var cannot_find = {{is_error}};
+
+    if(cannot_find){
+        for (var elem of document.getElementsByClassName('error')){
+            elem.style.display = 'inline-block';
+        }
+    }
+</script>

@@ -1,0 +1,133 @@
+*{
+    font-family: 'Open Sans', sans-serif;
+    color:white;
+}
+
+body{
+    background-color:#151315;
+    margin: 0;
+    height: calc(100% - 50px);
+    display:flex;
+    justify-items: center;
+}
+
+html{
+    height: 100%;
+}
+
+.main-body{
+    width: 600px;
+    margin:auto;
+}
+
+#heading{
+    font-size: 50px;
+    text-align:center;
+    margin-bottom:100px;
+}
+
+gr{
+    color: green;
+}
+
+bl{
+    color: #3072A6;
+}
+
+.row{
+    display:flex;
+    width:600px;
+    margin-top:30px;
+    justify-content: space-between;
+    align-items:center;
+}
+
+h2{
+    display:inline-block;
+    margin:0;
+    padding: 0;
+}
+
+button{
+    width: 100px;
+    height: 50px;
+    font-size: 20px;
+    border: none;
+    display:inline-block;
+}
+
+button:hover{
+    cursor:pointer;
+}
+
+#join{
+    background-color: #3d60ac;
+    transition: 0.1s;
+}
+
+#join:hover{
+    background-color: #293f6d;
+}
+
+#create{
+    background-color: #51d436;
+    transition: 0.1s;
+}
+
+#create:hover{
+    background-color: #41a02e;
+}
+
+input{
+    width: 100px;
+    height: 50px;
+    background-color:black;
+    border: none;
+    border-bottom: 1px solid white;
+    font-size:20px;
+    margin: 0;
+    display:inline-block;
+    padding-left: 10px;
+    padding-right:10px;
+}
+
+form{
+    display:inline-block;
+    height: 50px;
+    margin:0;
+    padding:0;
+
+    margin-right: 5px;
+}
+
+
+.error{
+    color: red;
+    float:right;
+    margin-top:5px;
+    display: none;
+}
+
+.foot{
+    width: 100%;
+    height: 50px;
+    background-color: rgb(53, 53, 53);
+    bottom: 0;
+    left: 0;
+    position: fixed;
+}
+
+.github-link{
+    float:right;
+    font-size: 20px;
+    text-decoration: none;
+    padding: 9px;
+}
+
+.link-img{
+    vertical-align: middle;
+}
+
+.link-text{
+    vertical-align: middle;
+}

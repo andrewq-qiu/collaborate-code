@@ -1,3 +1,18 @@
+"""Module with classes for representing
+drawn lines and the whiteboard aspect
+of the collaborate-code editor.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+"""
+
+
 from typing import Dict, List, Iterator
 
 

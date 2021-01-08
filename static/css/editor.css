@@ -16,7 +16,8 @@ body{
 
 #editor{
     width: 100%;
-    height: 100%;
+    height: calc(100% - 50px);
+    top:50px;
     z-index: 0;
     position: absolute;
     font-size: 25px;
@@ -24,4 +25,139 @@ body{
 
 .no-cursor{
     cursor: none;
+}
+
+.blur{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-color: rgba(255, 255, 255, 0);
+    z-index: 3;
+    backdrop-filter: blur(3px);
+    font-family: 'Open Sans', sans-serif;
+    color: white;
+    font-size: 25px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.blur div{
+    text-align:center;
+    width: 600px;
+}
+
+#join{
+    background-color: #3d60ac;
+    transition: 0.1s;
+    width: 100px;
+    height: 50px;
+    font-size: 20px;
+    border: none;
+    display:inline-block;
+    font-family: 'Open Sans', sans-serif;
+    color: white;
+}
+
+#join:hover{
+    background-color: #293f6d;
+    cursor:pointer;
+}
+
+#name-field{
+    width: 250px;
+    height: 50px;
+    background-color:black;
+    border: none;
+    border-bottom: 1px solid white;
+    font-size:20px;
+    margin: 0;
+    display:inline-block;
+    padding-left: 10px;
+    padding-right:10px;
+    color:white;
+}
+
+#join[disabled="true"]{
+    background-color:#656565;
+}
+
+#join[disabled="true"]:hover{
+    background-color: #656565;
+    cursor: default;
+}
+
+.header{
+    position:fixed;
+    width:100%;
+    height:50px;
+    background-color:rgb(53, 53, 53);
+    top:0;
+    color: white;
+    font-size:20px;
+    font-family: 'Open Sans', sans-serif;
+    display:flex;
+    align-items: center;
+    justify-content:space-between;
+}
+
+.users-section-container{
+    width: calc(100% - 200px);
+    margin-left:15px;
+    display:flex;
+    align-items:center;
+}
+
+#users-section{
+    width: 100%;
+    height:30px;
+    display:inline-block;
+    margin-left:5px;
+}
+
+#users-section div{
+    display:inline-block;
+    overflow:hidden;
+}
+
+.users-section-container span{
+    margin-right: 10px;
+}
+
+#share{
+    width: 150px;
+    height: 40px;
+    font-size: 20px;
+    border: none;
+    display:inline-block;
+    background-color: #51d436;
+    margin-right:15.5px;
+    transition: 0.1s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+#share:hover{
+    background-color: #41a02e;
+    cursor: pointer;
+}
+
+.user-box{
+    width:100px;
+    height:30px;
+    border-radius:10px;
+    font-family: sans-serif;
+    text-align:center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size:15px;
+    display:flex;
+    font-family: 'Open Sans', sans-serif;
+    margin-right:5px;
+    line-height:26px;
+}
+
+.user-box div{
+    vertical-align:middle;
 }
