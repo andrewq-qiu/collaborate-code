@@ -1,7 +1,8 @@
 /*This file is a mirror of the
-transform.py file. Please read the documentation
-in the transform.py for more information
-on these functions.
+transform.py file. The functions in this
+file apply Operation Transformation algorithms
+in the same implementation as transform.py,
+just on different datatypes. 
 
 Copyright and Usage Information
 ===============================
@@ -13,16 +14,35 @@ and the LICENSE file for more information.
 Author: Andrew Qiu (GitHub @andrewcoool)
 */
 
-
+/**
+ * Return whether or not pos_1 is before pos_2
+ * @param {Array} pos_1 - The first position
+ * @param {Array} pos_2 - The second position
+ * @returns {boolean} Whether or not pos_1 is before pos_2
+ */
 function is_pos_before(pos_1, pos_2){
     return pos_1[0] < pos_2[0] || (pos_1[0] == pos_2[0] && pos_1[1] < pos_2[1]);
 }
 
+
+/**
+ * Return whether or not pos_1 is the same as pos_2
+ * @param {Array} pos_1 - The first position
+ * @param {Array} pos_2 - The second position
+ * @returns {boolean} Whether or not pos_1 is the same as pos_2
+ */
 function is_same_pos(pos_1, pos_2){
     return pos_1[0] == pos_2[0] && pos_1[1] == pos_2[1];
 }
 
-/*Transform op_1 based on op_2. Assume op_2 is chronologically first.*/
+/**
+ * Transform op_1 against op_2, assuming that op_2
+ * is executed first and op_1 is executing immediately
+ * after.
+ * @param {Array} op_1 - The first operation
+ * @param {Array} op_2 - The second operation
+ * @returns {Array} The transformed first operation
+ */
 function xform(op_1, op_2){
     const t_1 = op_1[0];
     const t_2 = op_2[0];
@@ -40,6 +60,14 @@ function xform(op_1, op_2){
     }
 }
 
+/**
+ * Transform an array of operations against another list
+ * of operations. Return the operations each side must apply
+ * to reach the same state space.
+ * @param {Array} op_lefts - The first array of operations
+ * @param {Array} op_rights - The second array of operations
+ * @returns {Array} An array with two elements | 0 - the operations the left must apply, 1 - the operations the right must apply
+ */
 function xform_multiple(op_lefts, op_rights){
     /*See transform.py for documentation. This is a straight
     translation of python function xform_multiple.

@@ -1,11 +1,25 @@
 <!doctype html>
+
+<!--
+This is the main editor HTML file for
+the collaborate-code editor.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+-->
 <html>
 <head>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}?v=0.55">
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard.css') }}?v=0.19">
-    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard-addon.css') }}?v=0.18">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/editor.css') }}?v=0.56">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard.css') }}?v=0.20">
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/whiteboard-addon.css') }}?v=0.19">
     <link rel='stylesheet' href="{{ url_for('static', filename='css/cursor.css') }}?v=0.19">
 </head>
 <body>
@@ -34,14 +48,21 @@
 <script src="{{ url_for('static', filename='src/transform.js') }}?v=0.11" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='src/apply.js') }}?v=0.19" type="text/javascript" charset="utf-8"></script>
 
-<script src="{{ url_for('static', filename='src/whiteboard.js') }}?v=0.50" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='src/whiteboard.js') }}?v=0.51" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='src/whiteboard-addon.js') }}?v=0.32" type="text/javascript" charset="utf-8"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script>
-// Setup Socket Handling
-var socket = io('/editor');
+/*Main Script File for the collaborate-code editor.*/
 
+/*=================================================
+
+** Function Declarations: **
+*/
+
+/**
+ * @returns {string} The id of the editor currently connected to
+ */
 function getEditorId(){
     let queryString = window.location.search;
     let params = new URLSearchParams(queryString);
@@ -51,10 +72,87 @@ function getEditorId(){
     return editor_id
 }
 
-socket.on('connect', function(){
-    let editor_id = getEditorId();
-    socket.emit('joined', editor_id);
-});
+/**
+ * Executed when the Share button is clicked, prompting the user to
+ * copy the link of the editor to their clipboard
+ */
+function copyLink(){
+    copy(window.location);
+
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'COPIED';
+}
+
+/**
+ * Executed when the Share button is hovered over,
+ * changing the text of the button to "COPY LINK"
+ */
+function shareHover(){
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'COPY LINK';
+}
+
+/**
+ * Executed when the Share button is not hovered over
+ * (exited), changing the text of the button to 
+ * "SHARE" + editor id
+ */
+function shareNotHover(){
+    let share = document.getElementById('share');
+
+    share.innerHTML = 'SHARE ' + getEditorId();
+}
+
+// Update the button to the correct editor ID
+shareNotHover();
+
+
+/**
+ * Display a new user to the users section of the editor.
+ * @param {string} session - the session id of the connection between the client and server
+ * @param {string} name - the name of the user to add
+ * @param {string} color - the hex color code of the user to add
+ */
+function addUser(session, name, color){
+    var users_section = document.getElementById('users-section');
+
+    if(session != session_id){
+        let html = "<div><div class='user-box' style='background-color:" + color +  "''><div>" + name + "</div></div></div>";
+        users_section.innerHTML += html;
+    }else{
+        let html = "<div><div class='user-box' style='background-color:grey'><div>" + name + "</div></div></div>";
+        users_section.innerHTML = html + users_section.innerHTML;
+    }
+}
+
+/**
+ * Copy a string to the user's clipboard.
+ * @param {string} txt - the text to copy
+ */
+function copy(txt){
+    // Access the hidden input
+    var cb = document.getElementById("cb");
+    // Set the value of the input to the wanted text
+    cb.value = txt;
+
+    // Display the input
+    cb.style.display='block';
+
+    // Copy the text
+    cb.select();
+    document.execCommand('copy');
+
+    // Rehide the input
+    cb.style.display='none';
+}
+
+
+/*=================================================
+
+** Initialize Global Variables **
+*/
 
 // The changes made to the document by the client, which has
 // not yet been sent to the server
@@ -72,14 +170,30 @@ var waiting_for_response = true;
 // The name of the user (maybe nickname)
 var display_name = null;
 
-/*Send the pending changes to the server*/
+// The session id of the connection between the client and server
+var session_id = '';
+
+
+/*=================================================
+
+** Socket Initialization and Event Handling **
+*/
+
+var socket = io('/editor');
+
+/**
+ * Send the pending changes to the server
+ */
 function send_changes(){
     socket.emit('send-operation', JSON.stringify(pending_changes));
 }
 
-var session_id = '';
-
-/*If the server has completed the last request, send an update*/
+/**
+ * Update loop for sending changes and requesting
+ * updates from the server. If the server is still waiting
+ * for a response on a previous update, then wait for
+ * the next cycle.
+ */
 function update(){
     if (!waiting_for_response){
         // Send Response
@@ -93,6 +207,26 @@ function update(){
 
 // Set off update loop
 update();
+
+
+/**
+ * Executed when the user clicks the JOIN button with
+ * a chosen name. Emit the new name to the server
+ * and give edit access to the the user.
+ */
+function submitName(){
+    display_name = document.getElementById('name-field').value;
+
+    socket.emit('submit-name', display_name);
+    document.getElementById('blur-screen').style.display = 'none';
+}
+
+// On connection, let the server know
+// that you have connected a specific editor
+socket.on('connect', function(){
+    let editor_id = getEditorId();
+    socket.emit('joined', editor_id);
+});
 
 // Handle server callback success after joining
 socket.on('after-join', (session, lines, names_and_colors) => {
@@ -126,19 +260,36 @@ socket.on('call-back', (data) => {
         ignore_changes = false;
     }
     
-    
     // if(to_apply.length > 0){console.log('Received update...', to_apply);}
 });
 
 
-// Set up Editor
+// Handle updating the editor when a new user joins
+socket.on('new-user-joined', (session, name, color) => {
+    addUser(session, name, color);
+});
+
+
+/*=================================================
+
+** Editor Initialization **
+*/
+
 var editor_elem = document.getElementById('editor');
 
 var editor = ace.edit(editor_elem);
+
+// Set Ace Editor settings
 var JavaScriptMode = ace.require("ace/mode/python").Mode;
 editor.session.setMode(new JavaScriptMode());
 editor.setTheme('ace/theme/twilight');
 
+
+/**
+ * Executed when the user changes an item in the document.
+ * Send changes in Insert / Delete Operation format to the 
+ * server by pushing changes to pending_changes array.
+ */
 editor.session.on('change', function(e){
 
     if(ignore_changes){return;}
@@ -198,60 +349,5 @@ editor.session.on('change', function(e){
         }
 
     }
-});
-
-function submitName(){
-    display_name = document.getElementById('name-field').value;
-
-    socket.emit('submit-name', display_name);
-    document.getElementById('blur-screen').style.display = 'none';
-}
-
-function copyLink(){
-    copy(window.location);
-
-    let share = document.getElementById('share');
-
-    share.innerHTML = 'COPIED';
-}
-
-function shareHover(){
-    let share = document.getElementById('share');
-
-    share.innerHTML = 'COPY LINK';
-}
-
-function shareNotHover(){
-    let share = document.getElementById('share');
-
-    share.innerHTML = 'SHARE ' + getEditorId();
-}
-
-shareNotHover();
-
-function addUser(session, name, color){
-    var users_section = document.getElementById('users-section');
-
-    if(session != session_id){
-        let html = "<div><div class='user-box' style='background-color:" + color +  "''><div>" + name + "</div></div></div>";
-        users_section.innerHTML += html;
-    }else{
-        let html = "<div><div class='user-box' style='background-color:grey'><div>" + name + "</div></div></div>";
-        users_section.innerHTML = html + users_section.innerHTML;
-    }
-}
-
-function copy(txt){
-    var cb = document.getElementById("cb");
-    cb.value = txt;
-    cb.style.display='block';
-    cb.select();
-    document.execCommand('copy');
-    cb.style.display='none';
- }
-
-/*New User*/
-socket.on('new-user-joined', (session, name, color) => {
-    addUser(session, name, color);
 });
 </script>

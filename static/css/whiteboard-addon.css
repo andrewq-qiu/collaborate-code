@@ -1,3 +1,18 @@
+/*This file contains CSS properties for
+the addon implementation of the whiteboard
+to the code editor.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
+
 .whiteboard{
     width: 100%;
     height: 100%;

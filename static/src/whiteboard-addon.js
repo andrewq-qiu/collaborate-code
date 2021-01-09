@@ -1,18 +1,38 @@
-/*JS File for adding the Whiteboard to the code editor*/
+/*This file handles adding the whiteboard.js
+implementation of an HTML/CS/JS whiteboard
+onto the editor.
 
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
+/*=================================================
+
+** Whiteboard Creation **
+*/
+
+// Create the whiteboard HTML element 
+// and attach it to the page
 var wb_elem = document.createElement('div');
 wb_elem.classList.add('whiteboard');
-// Add the whiteboard to the body
 document.body.appendChild(wb_elem);
 
 // Initialize the WhiteBoard object
 var wb = new WhiteBoard(wb_elem);
 
-// ===============================
+/*=================================================
 
-// Create a toggle to switch between
-// the whiteboard and editor
+** Toggle Implementation **
+*/
 
+// Create a toggle to switch between the whiteboard
+// and the code editor
 var toggle = document.createElement('div');
 toggle.classList.add('toggle');
 document.body.appendChild(this.toggle);
@@ -23,7 +43,10 @@ toggle.state = true;
 wb.toolbar.element.classList.add('hide');
 wb.toolbar.color_button.classList.add('hide');
 
-/*Toggle between using the editor and whiteboard*/
+/**
+ * Toggle between the code editor
+ * and the whiteboard
+ */
 function toggleEditorAndBoard(){
     // Toggle state
     toggle.state = !toggle.state;
@@ -41,8 +64,7 @@ function toggleEditorAndBoard(){
     }
 }
 
-
-/*Add Listeners for toggle*/
+// Add event listeners for the toggle activation
 toggle.addEventListener('click', toggleEditorAndBoard);
 document.addEventListener("keydown", function(event) {
     const key = event.key;

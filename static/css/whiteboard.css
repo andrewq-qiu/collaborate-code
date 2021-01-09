@@ -1,3 +1,16 @@
+/*This file contains CSS properties for
+the whiteboard implementation.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
 .wb-canvas{
     float:left;
     z-index: 1;

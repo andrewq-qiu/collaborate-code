@@ -1,3 +1,17 @@
+/*This file contains CSS properties for
+the custom cursors used in the
+collaborate-code editor.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
 .cursor-square{
     width: 51px;
     height: 51px;

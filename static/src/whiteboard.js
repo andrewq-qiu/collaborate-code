@@ -1,7 +1,21 @@
-/*JS File with functions and classes for representing
-and managing a stand-alone whiteboard. 
+/*This file implements a working smooth-line
+drawing canvas (whiteboard) using HTML/CSS/JS.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
 */
 
+
+/**
+ * @class
+ * A class representing a two dimensional position
+ */
 class Pos{
     constructor(x, y){
         this.x = x;
@@ -9,8 +23,16 @@ class Pos{
     }
 }
 
-
+/**
+ * @class
+ * A class representing a whiteboard
+ */
 class WhiteBoard{
+
+    /**
+     * Construct a new whiteboard
+     * @param {HTMLElement} wb_elem - The HTML div for the whiteboard
+     */
     constructor(wb_elem){
         // Draw Functions
 
@@ -31,6 +53,12 @@ class WhiteBoard{
         this.recentPoints = [];
     }
 
+    /**
+     * Initialize the canvas of the whiteboard
+     * This method should only be used in the initialization
+     * process of the whiteboard and should not be called outside
+     * the class constructor.
+     */
     initializeCanvas(){
         this.canvas = document.createElement('canvas');
         this.canvas.classList.add('wb-canvas');
@@ -44,6 +72,12 @@ class WhiteBoard{
         this.memCanvas.height = 8000;
     }
 
+    /**
+     * Initialize the toolbar of the whiteboard
+     * This method should only be used in the initialization
+     * process of the whiteboard and should not be called outside
+     * the class constructor.
+     */
     initializeToolbar(){
         this.toolbar = {};
         this.toolbar.element = document.createElement('div');
@@ -117,10 +151,19 @@ class WhiteBoard{
         
     }
 
+    /**
+     * Fill the screen to the window
+     */
     fillScreen = e => {
         this.resize(window.innerWidth, window.innerHeight);
     }
 
+    /**
+     * Initialize the event listeners of the whiteboard
+     * This method should only be used in the initialization
+     * process of the whiteboard and should not be called outside
+     * the class constructor.
+     */
     initializeListeners(){
         this.canvas.addEventListener('mousemove', this.handleMouseMove);
         this.canvas.addEventListener('mousedown', this.handleMouseDown);
@@ -130,6 +173,11 @@ class WhiteBoard{
         window.addEventListener('resize', this.fillScreen);
     }
 
+    /**
+     * Handle the mousedown event on the whiteboard
+     * 
+     * @param {any} e - The mouse event
+     */
     handleMouseDown = e => {
         if(this.toolbar.selected_tool != 'wb-brush-button' && this.toolbar.selected_tool != 'wb-eraser-button'){return;}
 
@@ -138,6 +186,11 @@ class WhiteBoard{
         this.recentPoints.push(this.pos);
     }
 
+    /**
+     * Handle the mouseup event on the whiteboard
+     * 
+     * @param {any} e - The mouse event
+     */
     handleMouseUp = e => {
         // Add new line to push to server
 
@@ -162,11 +215,24 @@ class WhiteBoard{
         this.last_mouse_state = 0;
     }
 
+    /**
+     * Update the mouse position saved into the whiteboard
+     * using an event.
+     * 
+     * @param {any} e - The mouse event
+     */
     setPosition = e =>{
         let rect = e.target.getBoundingClientRect();
         this.pos = new Pos(e.clientX - rect.left, e.clientY - rect.top);
     }
 
+    /**
+     * Resize the whiteboard given
+     * a width and height.
+     * 
+     * @param {any} w - The width to resize to
+     * @param {any} h - The height to resize to
+     */
     resize(w, h){
         this.container.width = w;
         this.container.height = h;
@@ -177,16 +243,28 @@ class WhiteBoard{
         this.ctx.drawImage(this.memCanvas, 0, 0);
     }
 
+    /**
+     * Disable the controls of the whiteboard
+     */
     freeze(){
         this.frozen = true;
         this.container.classList.add('clickthrough');
     }
 
+    /**
+     * Enable the controls of the whiteboard
+     */
     unfreeze(){
         this.frozen = false;
         this.container.classList.remove('clickthrough');
     }
 
+    /**
+     * Erase a part of the whiteboard givne
+     * a new mouse event
+     * 
+     * @param {any} e - The mouse event
+     */
     erase = e => {
         this.setPosition(e);
         this.recentPoints.push(this.pos);
@@ -198,6 +276,11 @@ class WhiteBoard{
         this.smoothDraw(this.ctx, 'destination-out', this.recentPoints, 25);
     }
 
+    /**
+     * Handle the mousemove event on the whiteboard
+     * 
+     * @param {any} e - The mouse event
+     */
     handleMouseMove = e => {
         if(this.frozen) return;
         if (e.buttons !== 1){  
@@ -221,6 +304,12 @@ class WhiteBoard{
         }
     }
 
+    /**
+     * Draw a part of the whiteboard givne
+     * a new mouse event
+     * 
+     * @param {any} e - The mouse event
+     */
     draw = e => {
         this.setPosition(e);
         this.recentPoints.push(this.pos);
@@ -232,6 +321,15 @@ class WhiteBoard{
         this.smoothDraw(this.ctx, 'source-over', this.recentPoints, 6, this.color);
     }
 
+    /**
+     * Smoothly draw or erase given an array of points.
+     * 
+     * @param {CanvasRenderingContext2D} ctx - The context to draw/erase on
+     * @param {string} ctx_mode - The mode of the context (destination-out, source-over)
+     * @param {Array} points - The array of points to draw/erase
+     * @param {number} lineWidth - The width of the line
+     * @param {string} color - The color of the line
+     */
     smoothDraw(ctx, ctx_mode, points, lineWidth, color){
         // mouse left button must be pressed
         // if (e.buttons !== 1) return;
@@ -269,6 +367,11 @@ class WhiteBoard{
         ctx.stroke();
     }
 
+    /**
+     * Add new lines from a JSON string
+     * 
+     * @param {data} - The JSON string storing an Array of lines to add
+     */
     addLines(data){
         var lines = JSON.parse(data);
 
@@ -294,6 +397,11 @@ class WhiteBoard{
         this.waiting_for_server = false;
     }
 
+    /**
+     * Initialize server support for collaboartive editing.
+     * Ensure that a global socket is defined before initializing
+     * the server functions for the whiteboard.
+     */
     setupServer(){
         this.waiting_for_server = false;
         this.lines_to_send = [];
@@ -307,6 +415,11 @@ class WhiteBoard{
         setTimeout(this.updateServer.bind(this), 1000);
     }
 
+    /**
+     * Update loop for sending lines to the server
+     * or updating the client to any lines made by
+     * other users.
+     */
     updateServer(){
         if(!this.waiting_for_server){
             socket.emit('send-drawing', JSON.stringify(this.lines_to_send));

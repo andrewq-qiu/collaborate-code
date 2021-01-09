@@ -90,6 +90,11 @@ class Editor:
 
 
 def get_random_string(length: int) -> str:
+    """Return a random string of a given length.
+
+    Paramters:
+        - length: the length of the string to be generated
+    """
     select = string.ascii_lowercase + string.ascii_uppercase + string.digits
     result_str = ''.join(random.choice(select) for _ in range(length))
 

@@ -1,3 +1,17 @@
+/*This file contains CSS properties for
+the main page of the collaborate-code editor.
+
+Copyright and Usage Information
+===============================
+
+This project and file is licensed with the MIT License.
+See https://github.com/andrewcoool/collaborate-code/
+and the LICENSE file for more information.
+
+Author: Andrew Qiu (GitHub @andrewcoool)
+*/
+
+
 body{
     margin: 0;
 }
@@ -125,7 +139,7 @@ body{
 }
 
 #share{
-    width: 150px;
+    width: 180px;
     height: 40px;
     font-size: 20px;
     border: none;

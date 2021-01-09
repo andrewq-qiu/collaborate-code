@@ -13,7 +13,11 @@ and the LICENSE file for more information.
 Author: Andrew Qiu (GitHub @andrewcoool)
 */
 
-/*Apply operation to Ace Editor type.*/
+/**
+ * Apply an operation to the Ace Editor.
+ * @param {Array} op - the operation to be applied
+ * @param {Editor} editor_ - the ace editor to apply the operation on
+ */
 function apply(op, editor_){
     if (op[0] == 'ID'){return;}
 
