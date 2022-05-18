@@ -213,4 +213,4 @@ def update_drawings(raw_data) -> None:
 
 if __name__ == '__main__':
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    socket.run(app, debug=False, host='192.168.1.64', port=6969)
+    socket.run(app, debug=False, host='192.168.1.72', port=8080)
